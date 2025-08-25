@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -9,12 +9,12 @@ import {
   ViewStyle,
   TextStyle,
   StyleProp,
-} from 'react-native';
-import { Colors } from '../../constants/Colors';
-import { useColorScheme } from 'react-native';
+} from "react-native";
+import { Colors } from "../../constants/Colors";
+import { useColorScheme } from "react-native";
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline';
-type ButtonSize = 'small' | 'medium' | 'large';
+type ButtonVariant = "primary" | "secondary" | "outline";
+type ButtonSize = "small" | "medium" | "large";
 
 interface ButtonProps {
   title: string;
@@ -29,35 +29,39 @@ interface ButtonProps {
 export const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   disabled = false,
   loading = false,
   style,
 }) => {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors[colorScheme ?? "light"];
 
   const sizeStyle: ViewStyle =
-    size === 'small'
+    size === "small"
       ? styles.buttonSmall
-      : size === 'large'
+      : size === "large"
       ? styles.buttonLarge
       : styles.buttonMedium;
 
   const textSizeStyle: TextStyle =
-    size === 'small'
+    size === "small"
       ? styles.buttonTextSmall
-      : size === 'large'
+      : size === "large"
       ? styles.buttonTextLarge
       : styles.buttonTextMedium;
 
   const buttonStyles: StyleProp<ViewStyle> = [
     styles.button,
     sizeStyle,
-    variant === 'primary' && { backgroundColor: colors.primary },
-    variant === 'secondary' && { backgroundColor: colors.secondary },
-    variant === 'outline' && { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary },
+    variant === "primary" && { backgroundColor: colors.primary },
+    variant === "secondary" && { backgroundColor: colors.secondary },
+    variant === "outline" && {
+      backgroundColor: "transparent",
+      borderWidth: 1,
+      borderColor: colors.primary,
+    },
     disabled && styles.buttonDisabled,
     style,
   ];
@@ -65,7 +69,7 @@ export const Button: React.FC<ButtonProps> = ({
   const textStyles: StyleProp<TextStyle> = [
     styles.buttonText,
     textSizeStyle,
-    variant === 'primary' ? { color: '#FFFFFF' } : { color: colors.primary },
+    variant === "primary" ? { color: "#FFFFFF" } : { color: colors.primary },
     disabled && styles.buttonTextDisabled,
   ];
 
@@ -77,7 +81,9 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.8}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#FFFFFF' : colors.primary} />
+        <ActivityIndicator
+          color={variant === "primary" ? "#FFFFFF" : colors.primary}
+        />
       ) : (
         <Text style={textStyles}>{title}</Text>
       )}
@@ -90,10 +96,11 @@ interface InputProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
   multiline?: boolean;
   numberOfLines?: number;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<TextStyle>;
+  disabled?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -101,26 +108,33 @@ export const Input: React.FC<InputProps> = ({
   onChangeText,
   placeholder,
   secureTextEntry = false,
-  keyboardType = 'default',
+  keyboardType = "default",
   multiline = false,
   numberOfLines = 1,
   style,
+  disabled = false,
 }) => {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors[colorScheme ?? "light"];
+
+  const inputStyles: StyleProp<TextStyle> = [
+    styles.input,
+    {
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      color: colors.text,
+    },
+    multiline && { height: numberOfLines * 20 + 20 },
+    disabled &&
+      (colorScheme === "dark"
+        ? styles.inputDisabledDark
+        : styles.inputDisabledLight),
+    style,
+  ];
 
   return (
     <TextInput
-      style={[
-        styles.input,
-        {
-          borderColor: colors.border,
-          backgroundColor: colors.surface,
-          color: colors.text,
-        },
-        multiline && { height: numberOfLines * 20 + 20 },
-        style,
-      ]}
+      style={inputStyles}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
@@ -129,6 +143,7 @@ export const Input: React.FC<InputProps> = ({
       keyboardType={keyboardType}
       multiline={multiline}
       numberOfLines={numberOfLines}
+      editable={!disabled}
     />
   );
 };
@@ -141,7 +156,7 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, style, onPress }) => {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? 'light'];
+  const colors = Colors[colorScheme ?? "light"];
 
   const cardStyle: StyleProp<ViewStyle> = [
     styles.card,
@@ -163,9 +178,9 @@ export const Card: React.FC<CardProps> = ({ children, style, onPress }) => {
 const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
   } as ViewStyle,
   buttonSmall: {
     paddingHorizontal: 12,
@@ -183,7 +198,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   } as ViewStyle,
   buttonText: {
-    fontWeight: '600',
+    fontWeight: "600",
   } as TextStyle,
   buttonTextSmall: {
     fontSize: 14,
@@ -203,6 +218,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
+  } as TextStyle,
+  inputDisabledLight: {
+    backgroundColor: "#F3F4F6",
+    color: "#9CA3AF",
+  } as TextStyle,
+  inputDisabledDark: {
+    backgroundColor: "#2D2D2D",
+    color: "#6B7280",
   } as TextStyle,
   card: {
     borderRadius: 12,

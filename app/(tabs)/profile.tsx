@@ -8,6 +8,7 @@ import {
   useColorScheme,
   SafeAreaView,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -111,6 +112,24 @@ export default function ProfileScreen() {
     },
   ];
 
+  const actionItems = [
+    {
+      icon: "create-outline",
+      label: "Chỉnh sửa hồ sơ",
+      color: colors.primary,
+      backgroundColor: colors.secondary,
+      onPress: () => router.push("/(tabs)/edit-profile"),
+    },
+    {
+      icon: "key-outline",
+      label: "Đổi mật khẩu",
+      color: "#059669",
+      backgroundColor: "#DCFCE7",
+      onPress: () => router.push("/(tabs)/change-password"),
+    },
+   
+  ];
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -139,6 +158,48 @@ export default function ProfileScreen() {
         </LinearGradient>
 
         <View style={styles.content}>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              Hành động nhanh
+            </Text>
+            <Card style={styles.actionsCard}>
+              {actionItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.actionRow,
+                    index < actionItems.length - 1 && {
+                      borderBottomWidth: 1,
+                      borderBottomColor: colors.border,
+                    },
+                  ]}
+                  onPress={item.onPress}
+                >
+                  <View
+                    style={[
+                      styles.iconContainer,
+                      { backgroundColor: item.backgroundColor },
+                    ]}
+                  >
+                    <Ionicons
+                      name={item.icon as any}
+                      size={20}
+                      color={item.color}
+                    />
+                  </View>
+                  <Text style={[styles.actionLabel, { color: colors.text }]}>
+                    {item.label}
+                  </Text>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={colors.icon}
+                  />
+                </TouchableOpacity>
+              ))}
+            </Card>
+          </View>
+
           {profileSections.map((section, sectionIndex) => (
             <View key={sectionIndex} style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -185,7 +246,6 @@ export default function ProfileScreen() {
             </View>
           ))}
 
-         
           <Button
             title="Đăng xuất"
             onPress={handleLogout}
@@ -203,13 +263,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 20,
     paddingBottom: 40,
   },
   headerContent: {
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 40,
   },
   guestHeaderContent: {
     alignItems: "center",
@@ -306,11 +365,24 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
+    paddingTop: 20,
     fontSize: 18,
     fontWeight: "700",
     marginHorizontal: 20,
     marginBottom: 12,
-    paddingTop: 20,
+  },
+  actionsCard: {
+    marginHorizontal: 16,
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+  },
+  actionLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+    flex: 1,
   },
   sectionCard: {
     marginHorizontal: 16,

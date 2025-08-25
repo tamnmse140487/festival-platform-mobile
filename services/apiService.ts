@@ -24,11 +24,6 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-
-      if (!response.ok) {
-        return { success: false, message: `HTTP ${response.status}` };
-      }
-
       const data = await response.json();
       return data;
     } catch (error: any) {
@@ -46,6 +41,26 @@ class ApiService {
 
   async getUserById(id: number) {
     return this.request(`/accounts/search?id=${id}`);
+  }
+
+  async updateUser(id: number, userData: any) {
+    return this.request(`/accounts/update?id=${id}`, {
+      method: "PUT",
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async updatePassword(
+    accountId: number,
+    oldPassword: string,
+    newPassword: string
+  ) {
+    return this.request(
+      `/accounts/update-password?accountId=${accountId}&oldPassword=${oldPassword}&newPassword=${newPassword}`,
+      {
+        method: "PUT",
+      }
+    );
   }
 
   async getAllFestivals() {
@@ -74,6 +89,24 @@ class ApiService {
 
   async getBoothMenuItemImages(boothMenuItemId: number) {
     return this.request(`/images/search?boothMenueItemid=${boothMenuItemId}`);
+  }
+
+  async getFestivalparticipants(festivalId:number, accountId: number) {
+    return this.request(`/festivalparticipants/search?festivalId=${festivalId}&accountId=${accountId}`);
+  }
+
+  async createFestivalparticipants(festivalId: number, accountId: number) {
+    return this.request("/festivalparticipants/create", {
+      method: "POST",
+      body: JSON.stringify({ festivalId, accountId }),
+    });
+  }
+
+  async deleteFestivalparticipants(festivalId: number, accountId: number) {
+    return this.request(`/festivalparticipants/delete`, {
+      method: "DELETE",
+      body: JSON.stringify({ festivalId, accountId }),
+    });
   }
 
   setAuthToken(token: string) {
