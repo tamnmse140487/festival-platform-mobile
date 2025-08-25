@@ -12,9 +12,11 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Button, Input } from '../../components/ui';
 import { useAuth } from '../../context/AuthContext';
 import { accountService } from '../../services/accountService';
+import { uploadService } from '../../services/uploadService';
 import { Colors } from '../../constants/Colors';
 
 export default function EditProfileScreen() {
@@ -24,38 +26,82 @@ export default function EditProfileScreen() {
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
   const [className, setClassName] = useState(user?.className || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
+  const [selectedImage, setSelectedImage] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Lỗi', 'Cần cấp quyền truy cập thư viện ảnh');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setSelectedImage({
+        uri: asset.uri,
+        mimeType: asset.mimeType,
+        fileName: asset.fileName || 'avatar.jpg',
+      });
+      setAvatarUrl(asset.uri);
+    }
+  };
+
   const handleSave = async () => {
-    if (!user || !fullName || !email || !phoneNumber) {
+    if (!user || !fullName || !phoneNumber) {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
     setLoading(true);
     
-    const updateData = {
-      fullName,
-      email,
-      phoneNumber,
-      avatarUrl,
-      status: user.status,
-      updatedAt: new Date().toISOString(),
-      className: className || '',
-    };
-
     try {
+      let finalAvatarUrl = avatarUrl;
+
+      if (selectedImage) {
+        try {
+          finalAvatarUrl = await uploadService.uploadAvatarImage(selectedImage);
+        } catch (error) {
+          Alert.alert('Lỗi', 'Không thể tải ảnh lên. Vui lòng thử lại.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      const updateData: any = {};
+      
+      if (fullName !== user.fullName) updateData.fullName = fullName;
+      if (phoneNumber !== user.phoneNumber) updateData.phoneNumber = phoneNumber;
+      if (finalAvatarUrl !== user.avatarUrl) updateData.avatarUrl = finalAvatarUrl;
+      if ((className || '') !== (user.className || '')) updateData.className = className || '';
+      
+      if (Object.keys(updateData).length === 0) {
+        Alert.alert('Thông báo', 'Không có thay đổi nào để cập nhật');
+        setLoading(false);
+        return;
+      }
+
+      updateData.status = user.status;
+      updateData.updatedAt = new Date().toISOString();
+
       const success = await accountService.updateProfile(user.id, updateData);
       
       if (success) {
         updateUser({
+          ...user,
           fullName,
-          email,
           phoneNumber,
           className,
-          avatarUrl,
+          avatarUrl: finalAvatarUrl,
           updatedAt: updateData.updatedAt,
         });
         
@@ -110,6 +156,7 @@ export default function EditProfileScreen() {
               )}
               <TouchableOpacity 
                 style={[styles.editAvatarButton, { backgroundColor: colors.primary }]}
+                onPress={pickImage}
               >
                 <Ionicons name="camera" size={16} color="#FFFFFF" />
               </TouchableOpacity>
@@ -164,21 +211,6 @@ export default function EditProfileScreen() {
                 value={className}
                 onChangeText={setClassName}
                 placeholder="Nhập lớp học (tùy chọn)"
-                style={styles.input}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={[styles.label, { color: colors.text }]}>
-                URL ảnh đại diện
-              </Text>
-              <Input
-                value={avatarUrl}
-                onChangeText={setAvatarUrl}
-                placeholder="Nhập đường dẫn ảnh (tùy chọn)"
-                keyboardType="default"
-                multiline
-                numberOfLines={2}
                 style={styles.input}
               />
             </View>

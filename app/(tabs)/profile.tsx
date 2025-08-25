@@ -29,7 +29,14 @@ export default function ProfileScreen() {
   const handleLogout = () => {
     Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
       { text: "Hủy", style: "cancel" },
-      { text: "Đăng xuất", onPress: logout, style: "destructive" },
+      {
+        text: "Đăng xuất",
+        onPress: async () => {
+          await logout();
+          router.replace("/");
+        },
+        style: "destructive",
+      },
     ]);
   };
 
@@ -99,9 +106,10 @@ export default function ProfileScreen() {
         {
           icon: "wallet-outline",
           label: "Số dư",
-          value: user?.balance
-            ? `${user.balance.toLocaleString("vi-VN")} VNĐ`
-            : "Chưa có ví",
+          value:
+            user?.balance != null 
+              ? `${user.balance.toLocaleString("vi-VN")} VNĐ`
+              : "Chưa có ví",
         },
         {
           icon: "shield-checkmark-outline",
@@ -127,7 +135,6 @@ export default function ProfileScreen() {
       backgroundColor: "#DCFCE7",
       onPress: () => router.push("/(tabs)/change-password"),
     },
-   
   ];
 
   return (

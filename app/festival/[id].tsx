@@ -67,7 +67,7 @@ export default function FestivalDetailScreen() {
 
   const handleRegistrationToggle = async () => {
     if (!user?.id || !id) {
-      Alert.alert("Lỗi", "Vui lòng đăng nhập để tham gia lễ hội");
+      Alert.alert("Vui lòng đăng nhập để tham gia lễ hội");
       return;
     }
 
@@ -165,29 +165,33 @@ export default function FestivalDetailScreen() {
 
   const getRegistrationStatus = () => {
     if (!festival) return { canRegister: false, message: "" };
-    
+
     const now = new Date();
     const registrationStart = new Date(festival.registrationStartDate);
     const registrationEnd = new Date(festival.registrationEndDate);
-    
+
     if (festival.status !== "published") {
       return { canRegister: false, message: "Lễ hội chưa mở đăng ký" };
     }
-    
+
     if (now < registrationStart) {
-      return { 
-        canRegister: false, 
-        message: `Chưa tới thời gian đăng ký (từ ${formatDate(festival.registrationStartDate)})` 
+      return {
+        canRegister: false,
+        message: `Chưa tới thời gian đăng ký (từ ${formatDate(
+          festival.registrationStartDate
+        )})`,
       };
     }
-    
+
     if (now > registrationEnd) {
-      return { 
-        canRegister: false, 
-        message: `Đã hết thời gian đăng ký (đến ${formatDate(festival.registrationEndDate)})` 
+      return {
+        canRegister: false,
+        message: `Đã hết thời gian đăng ký (đến ${formatDate(
+          festival.registrationEndDate
+        )})`,
       };
     }
-    
+
     return { canRegister: true, message: "" };
   };
 
@@ -253,51 +257,70 @@ export default function FestivalDetailScreen() {
           </View>
         </View>
 
-        {user && (
-          <View style={styles.registrationSection}>
-            <TouchableOpacity
-              style={[
-                styles.registrationButton,
-                {
-                  backgroundColor: isParticipating
-                    ? colors.error
-                    : colors.primary,
-                  opacity: !registrationStatus.canRegister && !isParticipating ? 0.5 : 1,
-                },
-              ]}
-              onPress={handleRegistrationToggle}
-              disabled={
-                registrationLoading || (!registrationStatus.canRegister && !isParticipating)
-              }
-            >
-              {registrationLoading ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <View style={styles.buttonContent}>
-                  <Ionicons
-                    name={isParticipating ? "close-circle" : "checkmark-circle"}
-                    size={20}
-                    color="#FFFFFF"
-                  />
-                  <Text style={styles.registrationButtonText}>
-                    {isParticipating
-                      ? "Hủy tham gia lễ hội"
-                      : "Đăng ký tham gia lễ hội"}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+        <View style={styles.registrationSection}>
+          <TouchableOpacity
+            style={[
+              styles.registrationButton,
+              {
+                backgroundColor: isParticipating
+                  ? colors.error
+                  : colors.primary,
+                opacity:
+                  !registrationStatus.canRegister && !isParticipating ? 0.5 : 1,
+              },
+            ]}
+            onPress={handleRegistrationToggle}
+            disabled={
+              registrationLoading ||
+              (!registrationStatus.canRegister && !isParticipating)
+            }
+          >
+            {registrationLoading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <View style={styles.buttonContent}>
+                <Ionicons
+                  name={isParticipating ? "close-circle" : "checkmark-circle"}
+                  size={20}
+                  color="#FFFFFF"
+                />
+                <Text style={styles.registrationButtonText}>
+                  {isParticipating
+                    ? "Hủy tham gia lễ hội"
+                    : "Đăng ký tham gia lễ hội"}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
-            {!registrationStatus.canRegister && !isParticipating && registrationStatus.message && (
-              <View style={[styles.registrationNotice, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <Ionicons name="information-circle-outline" size={16} color={colors.icon} />
-                <Text style={[styles.registrationNoticeText, { color: colors.icon }]}>
+          {!registrationStatus.canRegister &&
+            !isParticipating &&
+            registrationStatus.message && (
+              <View
+                style={[
+                  styles.registrationNotice,
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="information-circle-outline"
+                  size={16}
+                  color={colors.icon}
+                />
+                <Text
+                  style={[
+                    styles.registrationNoticeText,
+                    { color: colors.icon },
+                  ]}
+                >
                   {registrationStatus.message}
                 </Text>
               </View>
             )}
-          </View>
-        )}
+        </View>
 
         <Card style={styles.infoCard}>
           <View style={styles.infoRow}>

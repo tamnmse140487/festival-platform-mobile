@@ -3,7 +3,6 @@ import { apiService } from "./apiService";
 
 interface UpdateUserData {
   fullName: string;
-  email: string;
   phoneNumber: string;
   avatarUrl: string;
   status: boolean;

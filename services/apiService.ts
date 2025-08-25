@@ -43,6 +43,10 @@ class ApiService {
     return this.request(`/accounts/search?id=${id}`);
   }
 
+  async getWalletUserByUserId(userId: number) {
+    return this.request(`/wallets/search?userId=${userId}`);
+  }
+
   async updateUser(id: number, userData: any) {
     return this.request(`/accounts/update?id=${id}`, {
       method: "PUT",
@@ -91,8 +95,10 @@ class ApiService {
     return this.request(`/images/search?boothMenueItemid=${boothMenuItemId}`);
   }
 
-  async getFestivalparticipants(festivalId:number, accountId: number) {
-    return this.request(`/festivalparticipants/search?festivalId=${festivalId}&accountId=${accountId}`);
+  async getFestivalparticipants(festivalId: number, accountId: number) {
+    return this.request(
+      `/festivalparticipants/search?festivalId=${festivalId}&accountId=${accountId}`
+    );
   }
 
   async createFestivalparticipants(festivalId: number, accountId: number) {

@@ -78,9 +78,16 @@ export default function HomeScreen() {
             onPress={() => router.push("/(auth)/login")}
           >
             {user ? (
-              <View style={styles.userAvatar}>
-                <Ionicons name="person" size={20} color="#FFFFFF" />
-              </View>
+              user.avatarUrl ? (
+                <Image
+                  source={{ uri: user.avatarUrl }}
+                  style={styles.userAvatarImage}
+                />
+              ) : (
+                <View style={styles.userAvatar}>
+                  <Ionicons name="person" size={20} color="#FFFFFF" />
+                </View>
+              )
             ) : (
               <View style={styles.loginButtonContent}>
                 <Ionicons name="log-in-outline" size={20} color="#FFFFFF" />
@@ -94,10 +101,11 @@ export default function HomeScreen() {
   );
 
   const renderStats = () => {
-    const activeFestivals = festivals.filter(
-      (f) => f.status === "published"
-    ).length;
-    const totalFestivals = festivals.length;
+    const activeFestivals = Array.isArray(festivals)
+      ? festivals.filter((f) => f.status === "published").length
+      : 0;
+
+    const totalFestivals = Array.isArray(festivals) ? festivals.length : 0;
 
     return (
       <View
@@ -127,7 +135,7 @@ export default function HomeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        data={festivals}
+        data={Array.isArray(festivals) ? festivals : []}
         renderItem={renderFestival}
         keyExtractor={(item) => item.festivalId.toString()}
         ListHeaderComponent={
@@ -209,6 +217,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.3)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  userAvatarImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   statsContainer: {
     flexDirection: "row",
