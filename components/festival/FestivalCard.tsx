@@ -77,13 +77,13 @@ export const FestivalCard: React.FC<FestivalCardProps> = ({
       case "published":
         return "#059669";
       case "draft":
-        return "#D97706";
+        return "#6B7280";
       case "completed":
         return "#0284C7";
       case "cancelled":
         return "#DC2626";
       default:
-        return "#6B7280";
+        return "#D97706";
     }
   };
 
