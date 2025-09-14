@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -28,6 +29,35 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
+  const FILTERS = ["all", "published", "ongoing", "completed"] as const;
+  type FilterKey = (typeof FILTERS)[number];
+
+  const [statusFilter, setStatusFilter] = useState<FilterKey>("all");
+
+  const ORDER: Record<"published" | "ongoing" | "completed", number> = {
+    published: 0,
+    ongoing: 1,
+    completed: 2,
+  };
+
+  const getFilteredFestivals = () => {
+    const base = Array.isArray(festivals) ? festivals : [];
+    const allowed = base.filter((f) =>
+      ["published", "ongoing", "completed"].includes(f.status)
+    );
+
+    const filtered =
+      statusFilter === "all"
+        ? allowed
+        : allowed.filter((f) => f.status === statusFilter);
+
+    return filtered.sort(
+      (a, b) =>
+        ORDER[a.status as keyof typeof ORDER] -
+        ORDER[b.status as keyof typeof ORDER]
+    );
+  };
+
   useEffect(() => {
     loadFestivals();
   }, []);
@@ -35,7 +65,22 @@ export default function HomeScreen() {
   const loadFestivals = async () => {
     try {
       const data = await festivalService.getAllFestivals();
-      setFestivals(data);
+
+      const filtered = Array.isArray(data)
+        ? data.filter((f) =>
+            ["published", "ongoing", "completed"].includes(f.status)
+          )
+        : [];
+
+      const sorted = filtered.sort((a, b) => {
+        const order = { published: 0, ongoing: 1, completed: 2 };
+        return (
+          order[a.status as keyof typeof order] -
+          order[b.status as keyof typeof order]
+        );
+      });
+
+      setFestivals(sorted);
     } catch (error) {
       console.error("Failed to load festivals:", error);
     } finally {
@@ -102,7 +147,7 @@ export default function HomeScreen() {
 
   const renderStats = () => {
     const activeFestivals = Array.isArray(festivals)
-      ? festivals.filter((f) => f.status === "published").length
+      ? festivals.filter((f) => f.status === "ongoing").length
       : 0;
 
     const totalFestivals = Array.isArray(festivals) ? festivals.length : 0;
@@ -132,16 +177,73 @@ export default function HomeScreen() {
     );
   };
 
+  const renderFilterBar = () => {
+    const counts = festivals.reduce(
+      (acc, f) => {
+        if (["published", "ongoing", "completed"].includes(f.status)) {
+          acc.all += 1;
+          // @ts-ignore
+          acc[f.status] += 1;
+        }
+        return acc;
+      },
+      { all: 0, published: 0, ongoing: 0, completed: 0 }
+    );
+
+    const labelMap: Record<FilterKey, string> = {
+      all: "Tất cả",
+      published: "Đang công bố",
+      ongoing: "Đang diễn ra",
+      completed: "Đã kết thúc",
+    };
+
+    return (
+      <View style={{ marginTop: 12 }}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScroll}
+        >
+          {FILTERS.map((key) => {
+            const active = statusFilter === key;
+            const count = counts[key];
+            return (
+              <TouchableOpacity
+                key={key}
+                onPress={() => setStatusFilter(key)}
+                style={[
+                  styles.chip,
+                  active && { backgroundColor: colors.primary },
+                  { borderColor: colors.icon },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.chipText,
+                    { color: active ? "#fff" : colors.text },
+                  ]}
+                >
+                  {labelMap[key]} {count > 0 ? `(${count})` : ""}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+    );
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        data={Array.isArray(festivals) ? festivals : []}
+        data={getFilteredFestivals()}
         renderItem={renderFestival}
         keyExtractor={(item) => item.festivalId.toString()}
         ListHeaderComponent={
           <View>
             {renderHeader()}
             {renderStats()}
+            {renderFilterBar()}
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               Các lễ hội hiện có
             </Text>
@@ -263,5 +365,27 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  filterBar: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  filterScroll: {
+    paddingHorizontal: 16,
+    gap: 8, 
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: "600",
   },
 });

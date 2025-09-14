@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Colors } from "../../constants/Colors";
 import { useColorScheme } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 type ButtonVariant = "primary" | "secondary" | "outline";
 type ButtonSize = "small" | "medium" | "large";
@@ -101,6 +102,7 @@ interface InputProps {
   numberOfLines?: number;
   style?: StyleProp<TextStyle>;
   disabled?: boolean;
+  showPasswordToggle?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -113,9 +115,14 @@ export const Input: React.FC<InputProps> = ({
   numberOfLines = 1,
   style,
   disabled = false,
+  showPasswordToggle = false,
 }) => {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const shouldHidePassword = secureTextEntry && !isPasswordVisible;
 
   const inputStyles: StyleProp<TextStyle> = [
     styles.input,
@@ -129,8 +136,44 @@ export const Input: React.FC<InputProps> = ({
       (colorScheme === "dark"
         ? styles.inputDisabledDark
         : styles.inputDisabledLight),
+    showPasswordToggle && secureTextEntry && styles.inputWithToggle,
     style,
   ];
+
+  const containerStyles: StyleProp<any> = [
+    styles.container,
+    showPasswordToggle && secureTextEntry && styles.containerWithToggle,
+  ];
+
+  if (showPasswordToggle && secureTextEntry) {
+    return (
+      <View style={containerStyles}>
+        <TextInput
+          style={inputStyles}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={colors.icon}
+          secureTextEntry={shouldHidePassword}
+          keyboardType={keyboardType}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          editable={!disabled}
+        />
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={isPasswordVisible ? "eye-off" : "eye"}
+            size={24}
+            color={colors.icon}
+          />
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <TextInput
@@ -235,4 +278,23 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   } as ViewStyle,
+  inputWithToggle: {
+    flex: 1,
+    paddingRight: 50,
+  },
+  container: {
+    position: "relative",
+  },
+  containerWithToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  toggleButton: {
+    position: "absolute",
+    right: 12,
+    height: 50,
+    width: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

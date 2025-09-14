@@ -7,6 +7,12 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (args: {
+    email: string;
+    password: string;
+    fullName: string;
+    phoneNumber?: string;
+  }) => Promise<boolean>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
   loading: boolean;
@@ -125,9 +131,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register: AuthContextType["register"] = async ({
+    email,
+    password,
+    fullName,
+    phoneNumber,
+  }) => {
+    try {
+      setLoading(true);
+
+      const res = await apiService.createAccount({
+        email,
+        password,
+        fullName,
+        phoneNumber,
+        roleId: 6,
+        status: true,
+      });
+
+      if (!res) {
+        console.error("Register failed:", res);
+        return false;
+      }
+
+      const ok = await login(email, password);
+      return ok;
+    } catch (err) {
+      console.error("Register exception:", err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, updateUser, loading }}
+      value={{ user, token, login, register, logout, updateUser, loading }}
     >
       {children}
     </AuthContext.Provider>

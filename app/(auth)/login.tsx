@@ -94,9 +94,19 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Nhập mật khẩu"
-                secureTextEntry
+                secureTextEntry={true}
+                showPasswordToggle={true}
               />
             </View>
+
+            <TouchableOpacity
+              onPress={() => router.replace("/(auth)/register")}
+            >
+              <Text style={{ textAlign: "center", color: colors.text }}>
+                Chưa có tài khoản?{" "}
+                <Text style={{ fontWeight: "700" }}>Đăng ký</Text>
+              </Text>
+            </TouchableOpacity>
 
             <Button
               title="Đăng nhập"

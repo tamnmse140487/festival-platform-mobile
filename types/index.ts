@@ -97,7 +97,7 @@ export interface FestivalBasic {
   maxBeverageBooths: number;
   registeredFoodBooths: number;
   registeredBeverageBooths: number;
-  status: 'draft' | 'published' | 'cancelled' | 'completed';
+  status: 'draft' | 'published' | 'cancelled' | 'completed' | 'ongoing';
   totalRevenue: number;
   description: string;
   cancellationReason: string | null;

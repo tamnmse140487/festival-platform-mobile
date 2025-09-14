@@ -39,6 +39,25 @@ class ApiService {
     });
   }
 
+  async createAccount(payload: {
+    email: string;
+    password: string;
+    fullName: string;
+    phoneNumber?: string;
+    roleId?: number; 
+    status?: boolean; 
+  }) {
+    const body = {
+      roleId: 6,
+      status: true,
+      ...payload,
+    };
+    return this.request("/accounts/create", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  }
+
   async getUserById(id: number) {
     return this.request(`/accounts/search?id=${id}`);
   }

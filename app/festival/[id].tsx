@@ -124,21 +124,25 @@ export default function FestivalDetailScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "published":
-        return "#059669";
+        return "#166534";
+      case "ongoing":
+        return "#1E40AF";
       case "draft":
-        return "#6B7280";
+        return "#1F2937";
       case "completed":
-        return "#0284C7";
+        return "#5B21B6";
       case "cancelled":
-        return "#DC2626";
+        return "#991B1B";
       default:
-        return "#D97706";
+        return "#D3D3D3";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case "published":
+        return "Đang công bố";
+      case "ongoing":
         return "Đang diễn ra";
       case "draft":
         return "Bản nháp";
