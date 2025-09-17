@@ -99,7 +99,7 @@ export default function FestivalDetailScreen() {
           user.id
         );
 
-      if (result) {
+      if (result.length > 0) {
         setIsParticipating(true);
       } else {
         setIsParticipating(false);
@@ -138,11 +138,12 @@ export default function FestivalDetailScreen() {
             user.id
           );
 
-        if (result) {
+
+        if (result?.success === false) {
+          Alert.alert("Lỗi", `${result?.detail}`);
+        } else {
           setIsParticipating(true);
           Alert.alert("Thành công", "Đăng ký tham gia lễ hội thành công!");
-        } else {
-          Alert.alert("Lỗi", "Không thể đăng ký tham gia lễ hội");
         }
       }
     } catch (error) {

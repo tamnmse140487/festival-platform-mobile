@@ -43,21 +43,17 @@ export default function MyFestivalsScreen() {
     try {
       setLoading(true);
 
-      // gọi service, backend trả về mảng participant
       const list: any[] =
         await festivalParticipantsService.getMyParticipatingFestivals(user.id);
 
-      // map sang festival object
       const festivals: FestivalBasic[] = (Array.isArray(list) ? list : [])
         .map((p: any) => p.festival)
         .filter(Boolean);
 
-      // lọc status
       const filtered = festivals.filter((f) =>
         ["published", "ongoing", "completed"].includes(f.status as any)
       );
 
-      // sort
       const sorted = filtered.sort(
         (a, b) =>
           (ORDER[a.status as keyof typeof ORDER] ?? 99) -
@@ -103,7 +99,7 @@ export default function MyFestivalsScreen() {
     >
       <View style={styles.container}>
         <Text style={[styles.title, { color: colors.text }]}>
-          Lễ hội đã đăng ký
+          Lễ hội đã đăng ký tham gia
         </Text>
 
         <FlatList
