@@ -44,8 +44,8 @@ class ApiService {
     password: string;
     fullName: string;
     phoneNumber?: string;
-    roleId?: number; 
-    status?: boolean; 
+    roleId?: number;
+    status?: boolean;
   }) {
     const body = {
       roleId: 6,
@@ -55,6 +55,20 @@ class ApiService {
     return this.request("/accounts/create", {
       method: "POST",
       body: JSON.stringify(body),
+    });
+  }
+
+  async sendOtp(email: string) {
+    return this.request("/accounts/send-otp", {
+      method: "POST",
+      body: JSON.stringify( email ),
+    });
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    return this.request("/accounts/confirm-otp", {
+      method: "POST",
+      body: JSON.stringify({ email, otp }),
     });
   }
 

@@ -120,7 +120,11 @@ export default function HomeScreen() {
           </View>
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={() => router.push("/(auth)/login")}
+            onPress={() =>
+              user
+                ? router.push("/(tabs)/profile")
+                : router.push("/(auth)/login")
+            }
           >
             {user ? (
               user.avatarUrl ? (
@@ -129,8 +133,13 @@ export default function HomeScreen() {
                   style={styles.userAvatarImage}
                 />
               ) : (
-                <View style={styles.userAvatar}>
-                  <Ionicons name="person" size={20} color="#FFFFFF" />
+                <View style={styles.userAvatarWrapper}>
+                  <View style={styles.userAvatar}>
+                    <Ionicons name="person" size={20} color="#FFFFFF" />
+                  </View>
+                  <Text style={styles.userNameText} numberOfLines={1}>
+                    {user.fullName}
+                  </Text>
                 </View>
               )
             ) : (
@@ -375,7 +384,7 @@ const styles = StyleSheet.create({
   },
   filterScroll: {
     paddingHorizontal: 16,
-    gap: 8, 
+    gap: 8,
   },
   chip: {
     paddingHorizontal: 12,
@@ -387,5 +396,16 @@ const styles = StyleSheet.create({
   chipText: {
     fontSize: 13,
     fontWeight: "600",
+  },
+  userAvatarWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userNameText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 8,
+    maxWidth: 120, 
   },
 });

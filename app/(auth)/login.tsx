@@ -100,12 +100,10 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity
-              onPress={() => router.replace("/(auth)/register")}
+              onPress={() => router.push("/(auth)/forgot-password")}
+              style={styles.linkWrapperRight}
             >
-              <Text style={{ textAlign: "center", color: colors.text }}>
-                Chưa có tài khoản?{" "}
-                <Text style={{ fontWeight: "700" }}>Đăng ký</Text>
-              </Text>
+              <Text style={styles.linkText}>Quên mật khẩu?</Text>
             </TouchableOpacity>
 
             <Button
@@ -114,6 +112,16 @@ export default function LoginScreen() {
               loading={loading}
               style={styles.loginButton}
             />
+
+            <TouchableOpacity
+              onPress={() => router.replace("/(auth)/register")}
+              style={styles.linkWrapper}
+            >
+              <Text style={styles.linkText}>
+                Chưa có tài khoản?{" "}
+                <Text style={styles.linkHighlight}>Đăng ký</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -205,5 +213,25 @@ const styles = StyleSheet.create({
   demoText: {
     fontSize: 13,
     fontFamily: "monospace",
+  },
+  linkWrapper: {
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
+  linkWrapperRight: {
+    alignSelf: "flex-end",
+    marginBottom: 16,
+  },
+
+  linkText: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+  },
+
+  linkHighlight: {
+    fontWeight: "700",
+    color: "#007AFF",
   },
 });
