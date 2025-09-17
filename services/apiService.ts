@@ -61,7 +61,7 @@ class ApiService {
   async sendOtp(email: string) {
     return this.request("/accounts/send-otp", {
       method: "POST",
-      body: JSON.stringify( email ),
+      body: JSON.stringify(email),
     });
   }
 
@@ -132,6 +132,10 @@ class ApiService {
     return this.request(
       `/festivalparticipants/search?festivalId=${festivalId}&accountId=${accountId}`
     );
+  }
+
+  async getFestivalParticipantsByAccountId(accountId: number) {
+    return this.request(`/festivalparticipants/search?accountId=${accountId}`);
   }
 
   async createFestivalparticipants(festivalId: number, accountId: number) {

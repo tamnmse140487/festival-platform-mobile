@@ -1,7 +1,7 @@
 import { apiService } from "./apiService";
 
 export const festivalParticipantsService = {
-  getFestivalParticipantsByAccountId: async (
+  getFestivalParticipantsByAccIdAndFeslId: async (
     festivalId: number,
     accountId: number
   ): Promise<any> => {
@@ -10,8 +10,19 @@ export const festivalParticipantsService = {
         festivalId,
         accountId
       )) as any;
-      //   return response || [];
-      return true;
+      return response || [];
+    } catch (error) {
+      console.error("Failed to load festival participants:", error);
+      return [];
+    }
+  },
+
+  getMyParticipatingFestivals: async (accountId: number): Promise<any> => {
+    try {
+      const response = (await apiService.getFestivalParticipantsByAccountId(
+        accountId
+      )) as any;
+      return response || [];
     } catch (error) {
       console.error("Failed to load festival participants:", error);
       return [];
@@ -27,8 +38,8 @@ export const festivalParticipantsService = {
         festivalId,
         accountId
       )) as any;
-      //   return response || null;
-      return true;
+
+      return response || null;
     } catch (error) {
       console.error("Failed to create festival participant:", error);
       return null;

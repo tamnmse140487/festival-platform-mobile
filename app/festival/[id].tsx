@@ -34,7 +34,7 @@ export default function FestivalDetailScreen() {
 
   useEffect(() => {
     loadFestival();
-    // checkParticipationStatus();
+    checkParticipationStatus();
   }, [id]);
 
   const loadFestival = async () => {
@@ -55,11 +55,16 @@ export default function FestivalDetailScreen() {
 
     try {
       const result =
-        await festivalParticipantsService.getFestivalParticipantsByAccountId(
+        await festivalParticipantsService.getFestivalParticipantsByAccIdAndFeslId(
           parseInt(id),
           user.id
         );
-      setIsParticipating(result);
+
+      if (result) {
+        setIsParticipating(true);
+      } else {
+        setIsParticipating(false);
+      }
     } catch (error) {
       console.error("Failed to check participation status:", error);
     }

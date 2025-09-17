@@ -41,8 +41,6 @@ export default function VerifyOtpScreen() {
         return;
       }
 
-      // Theo yêu cầu: sau khi nhập OTP thành công,
-      // hiển thị thông báo mật khẩu mới đã được gửi đến email
       Alert.alert(
         "Thành công",
         "Mật khẩu mới đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư và đăng nhập lại.",
