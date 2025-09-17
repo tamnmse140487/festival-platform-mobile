@@ -6,7 +6,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
-import { FestivalImage } from '../../types';
+import { FestivalImage } from '../../../types';
 
 const { width } = Dimensions.get('window');
 

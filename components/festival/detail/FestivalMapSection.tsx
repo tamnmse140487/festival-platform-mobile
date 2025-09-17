@@ -8,10 +8,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Card } from "../ui";
-import { BoothModal } from "../booth/BoothModal";
-import { FestivalMap } from "../../types";
-import { Colors } from "../../constants/Colors";
+import { Card } from "../../ui";
+import { BoothModal } from "../../booth/BoothModal";
+import { FestivalMap } from "../../../types";
+import { Colors } from "../../../constants/Colors";
 
 interface FestivalMapSectionProps {
   maps: FestivalMap[];

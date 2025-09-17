@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   useColorScheme,
   ActivityIndicator,
-  TouchableOpacity,
   Alert,
+  Text,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Card } from "../../components/ui";
-import { FestivalImageGallery } from "../../components/festival/FestivalImageGallery";
-import { FestivalMenuItems } from "../../components/festival/FestivalMenuItems";
-import { FestivalMapSection } from "../../components/festival/FestivalMapSection";
+import { FestivalImageGallery } from "../../components/festival/detail/FestivalImageGallery";
+import { FestivalMenuItems } from "../../components/festival/detail/FestivalMenuItems";
+import { FestivalMapSection } from "../../components/festival/detail/FestivalMapSection";
+import { FestivalHeader } from "../../components/festival/detail/FestivalHeader";
+import { FestivalRegistration } from "../../components/festival/detail/FestivalRegistration";
+import { FestivalInfo } from "../../components/festival/detail/FestivalInfo";
+import { FestivalReviewForm } from "../../components/festival/detail/FestivalReviewForm";
+import { FestivalReviewsList } from "../../components/festival/detail/FestivalReviewsList";
 import { festivalService } from "../../services/festivalService";
 import { festivalParticipantsService } from "../../services/festivalParticipantsService";
+import { reviewsService } from "../../services/reviewsService";
 import { Festival } from "../../types";
 import { Colors } from "../../constants/Colors";
 import { useAuth } from "@/context/AuthContext";
@@ -32,10 +36,19 @@ export default function FestivalDetailScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [myReview, setMyReview] = useState<any | null>(null);
+  const [ratingInput, setRatingInput] = useState<number>(0);
+  const [commentInput, setCommentInput] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(false);
+
   useEffect(() => {
     loadFestival();
     checkParticipationStatus();
-  }, [id]);
+    loadReviews();
+  }, [id, user?.id]);
 
   const loadFestival = async () => {
     if (!id) return;
@@ -47,6 +60,32 @@ export default function FestivalDetailScreen() {
       console.error("Failed to load festival:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadReviews = async () => {
+    if (!id) return;
+    setReviewsLoading(true);
+    try {
+      const res: any = await reviewsService.getByFestivalId(parseInt(id));
+      const list = res?.data ?? res ?? [];
+      setReviews(list);
+
+      if (user?.id) {
+        const mine = list.find((r: any) => r.accountId === user.id);
+        setMyReview(mine || null);
+        if (mine) {
+          setRatingInput(mine.rating);
+          setCommentInput(mine.comment ?? "");
+        } else {
+          setRatingInput(0);
+          setCommentInput("");
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load reviews:", e);
+    } finally {
+      setReviewsLoading(false);
     }
   };
 
@@ -114,94 +153,103 @@ export default function FestivalDetailScreen() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN", {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const handleSubmitReview = async () => {
+    if (!user?.id || !id) {
+      Alert.alert("Vui lòng đăng nhập để viết đánh giá");
+      return;
+    }
+    if (!ratingInput || ratingInput < 1) {
+      Alert.alert("Vui lòng chọn số sao (ít nhất 1)");
+      return;
+    }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-        return "#166534";
-      case "ongoing":
-        return "#1E40AF";
-      case "draft":
-        return "#1F2937";
-      case "completed":
-        return "#5B21B6";
-      case "cancelled":
-        return "#991B1B";
-      default:
-        return "#D3D3D3";
+    setSubmitting(true);
+    try {
+      if (editing && myReview) {
+        const res: any = await reviewsService.update({
+          reviewId: myReview.id,
+          rating: ratingInput,
+          comment: commentInput,
+        });
+        if (res?.success === false)
+          throw new Error(res?.message || "Update failed");
+        Alert.alert("Thành công", "Đã cập nhật đánh giá");
+      } else {
+        const res: any = await reviewsService.create({
+          festivalId: parseInt(id),
+          accountId: user.id,
+          rating: ratingInput,
+          comment: commentInput,
+        });
+        if (res?.success === false)
+          throw new Error(res?.message || "Create failed");
+        Alert.alert("Thành công", "Đã gửi đánh giá");
+      }
+      setEditing(false);
+      await loadReviews();
+    } catch (e: any) {
+      console.error("Submit review error:", e);
+      Alert.alert("Lỗi", e?.message || "Không thể gửi đánh giá");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "published":
-        return "Đang công bố";
-      case "ongoing":
-        return "Đang diễn ra";
-      case "draft":
-        return "Bản nháp";
-      case "completed":
-        return "Đã kết thúc";
-      case "cancelled":
-        return "Đã hủy";
-      default:
-        return "Không xác định";
+  const startEditMyReview = () => {
+    if (!myReview) return;
+    setRatingInput(myReview.rating);
+    setCommentInput(myReview.comment || "");
+    setEditing(true);
+  };
+
+  const cancelEditReview = () => {
+    setEditing(false);
+    if (myReview) {
+      setRatingInput(myReview.rating);
+      setCommentInput(myReview.comment || "");
+    } else {
+      setRatingInput(0);
+      setCommentInput("");
     }
   };
 
-  const canRegister = () => {
-    if (!festival) return false;
-    const now = new Date();
-    const registrationStart = new Date(festival.registrationStartDate);
-    const registrationEnd = new Date(festival.registrationEndDate);
-    return (
-      festival.status === "published" &&
-      now >= registrationStart &&
-      now <= registrationEnd
-    );
+  const handleDeleteMyReview = async () => {
+    if (!myReview) return;
+    Alert.alert("Xoá đánh giá", "Bạn chắc chắn muốn xoá đánh giá của mình?", [
+      { text: "Huỷ", style: "cancel" },
+      {
+        text: "Xoá",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const res: any = await reviewsService.delete(myReview.id);
+            if (res?.success === false)
+              throw new Error(res?.message || "Delete failed");
+            Alert.alert("Đã xoá", "Đánh giá của bạn đã được xoá");
+            setMyReview(null);
+            setRatingInput(0);
+            setCommentInput("");
+            setEditing(false);
+            await loadReviews();
+          } catch (e: any) {
+            console.error("Delete review error:", e);
+            Alert.alert("Lỗi", e?.message || "Không thể xoá đánh giá");
+          }
+        },
+      },
+    ]);
   };
 
-  const getRegistrationStatus = () => {
-    if (!festival) return { canRegister: false, message: "" };
+  const handleEditReview = (review: any) => {
+    setMyReview(review);
+    setRatingInput(review.rating);
+    setCommentInput(review.comment || "");
+    setEditing(true);
+  };
 
-    const now = new Date();
-    const registrationStart = new Date(festival.registrationStartDate);
-    const registrationEnd = new Date(festival.registrationEndDate);
-
-    if (festival.status !== "published") {
-      return { canRegister: false, message: "Lễ hội chưa mở đăng ký" };
-    }
-
-    if (now < registrationStart) {
-      return {
-        canRegister: false,
-        message: `Chưa tới thời gian đăng ký (từ ${formatDate(
-          festival.registrationStartDate
-        )})`,
-      };
-    }
-
-    if (now > registrationEnd) {
-      return {
-        canRegister: false,
-        message: `Đã hết thời gian đăng ký (đến ${formatDate(
-          festival.registrationEndDate
-        )})`,
-      };
-    }
-
-    return { canRegister: true, message: "" };
+  const handleDeleteReview = (review: any) => {
+    setMyReview(review);
+    handleDeleteMyReview();
   };
 
   if (loading) {
@@ -233,8 +281,6 @@ export default function FestivalDetailScreen() {
     );
   }
 
-  const registrationStatus = getRegistrationStatus();
-
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
@@ -246,163 +292,43 @@ export default function FestivalDetailScreen() {
       />
 
       <View style={styles.content}>
-        <View style={styles.titleSection}>
-          <Text style={[styles.title, { color: colors.text }]}>
-            {festival.festivalName}
-          </Text>
-          <Text style={[styles.theme, { color: colors.icon }]}>
-            {festival.theme}
-          </Text>
+        <FestivalHeader festival={festival} />
 
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: getStatusColor(festival.status) },
-            ]}
-          >
-            <Text style={styles.statusText}>
-              {getStatusText(festival.status)}
-            </Text>
-          </View>
-        </View>
+        <FestivalRegistration
+          festival={festival}
+          isParticipating={isParticipating}
+          registrationLoading={registrationLoading}
+          onToggleRegistration={handleRegistrationToggle}
+        />
 
-        <View style={styles.registrationSection}>
-          <TouchableOpacity
-            style={[
-              styles.registrationButton,
-              {
-                backgroundColor: isParticipating
-                  ? colors.error
-                  : colors.primary,
-                opacity:
-                  !registrationStatus.canRegister && !isParticipating ? 0.5 : 1,
-              },
-            ]}
-            onPress={handleRegistrationToggle}
-            disabled={
-              registrationLoading ||
-              (!registrationStatus.canRegister && !isParticipating)
-            }
-          >
-            {registrationLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <View style={styles.buttonContent}>
-                <Ionicons
-                  name={isParticipating ? "close-circle" : "checkmark-circle"}
-                  size={20}
-                  color="#FFFFFF"
-                />
-                <Text style={styles.registrationButtonText}>
-                  {isParticipating
-                    ? "Hủy tham gia lễ hội"
-                    : "Đăng ký tham gia lễ hội"}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {!registrationStatus.canRegister &&
-            !isParticipating &&
-            registrationStatus.message && (
-              <View
-                style={[
-                  styles.registrationNotice,
-                  {
-                    backgroundColor: colors.background,
-                    borderColor: colors.border,
-                  },
-                ]}
-              >
-                <Ionicons
-                  name="information-circle-outline"
-                  size={16}
-                  color={colors.icon}
-                />
-                <Text
-                  style={[
-                    styles.registrationNoticeText,
-                    { color: colors.icon },
-                  ]}
-                >
-                  {registrationStatus.message}
-                </Text>
-              </View>
-            )}
-        </View>
-
-        <Card style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Ionicons
-              name="calendar-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: colors.text }]}>
-                Thời gian diễn ra
-              </Text>
-              <Text style={[styles.infoValue, { color: colors.icon }]}>
-                {formatDate(festival.startDate)}
-              </Text>
-              <Text style={[styles.infoValue, { color: colors.icon }]}>
-                đến {formatDate(festival.endDate)}
-              </Text>
-            </View>
-          </View>
-
-          <View
-            style={[styles.infoDivider, { backgroundColor: colors.border }]}
-          />
-
-          <View style={styles.infoRow}>
-            <Ionicons
-              name="location-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: colors.text }]}>
-                Địa điểm
-              </Text>
-              <Text style={[styles.infoValue, { color: colors.icon }]}>
-                {festival.location}
-              </Text>
-            </View>
-          </View>
-
-          <View
-            style={[styles.infoDivider, { backgroundColor: colors.border }]}
-          />
-
-          <View style={styles.infoRow}>
-            <Ionicons name="time-outline" size={20} color={colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={[styles.infoLabel, { color: colors.text }]}>
-                Thời gian đăng ký
-              </Text>
-              <Text style={[styles.infoValue, { color: colors.icon }]}>
-                Từ {formatDate(festival.registrationStartDate)}
-              </Text>
-              <Text style={[styles.infoValue, { color: colors.icon }]}>
-                đến {formatDate(festival.registrationEndDate)}
-              </Text>
-            </View>
-          </View>
-        </Card>
-
-        <Card style={styles.descriptionCard}>
-          <Text style={[styles.descriptionTitle, { color: colors.text }]}>
-            Mô tả lễ hội
-          </Text>
-          <Text style={[styles.description, { color: colors.icon }]}>
-            {festival.description}
-          </Text>
-        </Card>
+        <FestivalInfo festival={festival} />
 
         <FestivalMenuItems menus={festival.festivalMenus} />
 
         <FestivalMapSection maps={festival.festivalMaps} />
+
+        <FestivalReviewForm
+          myReview={myReview}
+          editing={editing}
+          ratingInput={ratingInput}
+          commentInput={commentInput}
+          submitting={submitting}
+          onRatingChange={setRatingInput}
+          onCommentChange={setCommentInput}
+          onSubmit={handleSubmitReview}
+          onStartEdit={startEditMyReview}
+          onCancelEdit={cancelEditReview}
+          onDelete={handleDeleteMyReview}
+        />
+
+        <FestivalReviewsList
+          reviews={reviews}
+          reviewsLoading={reviewsLoading}
+          userId={user?.id}
+          editing={editing}
+          onEditReview={handleEditReview}
+          onDeleteReview={handleDeleteReview}
+        />
       </View>
     </ScrollView>
   );
@@ -437,108 +363,5 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
-  },
-  titleSection: {
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 8,
-    lineHeight: 34,
-  },
-  theme: {
-    fontSize: 16,
-    fontStyle: "italic",
-    marginBottom: 12,
-    lineHeight: 22,
-  },
-  statusBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  statusText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  registrationSection: {
-    marginBottom: 20,
-  },
-  registrationButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  buttonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  registrationButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  registrationNotice: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  registrationNoticeText: {
-    fontSize: 14,
-    marginLeft: 8,
-    flex: 1,
-    lineHeight: 20,
-  },
-  infoCard: {
-    marginBottom: 16,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingVertical: 12,
-  },
-  infoContent: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  infoDivider: {
-    height: 1,
-    marginLeft: 32,
-  },
-  descriptionCard: {
-    marginBottom: 16,
-  },
-  descriptionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 15,
-    lineHeight: 22,
   },
 });

@@ -6,9 +6,9 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Card } from '../ui';
-import { FestivalMenu, MenuItem } from '../../types';
-import { Colors } from '../../constants/Colors';
+import { Card } from '../../ui';
+import { FestivalMenu, MenuItem } from '../../../types';
+import { Colors } from '../../../constants/Colors';
 
 interface FestivalMenuItemsProps {
   menus: FestivalMenu[];
