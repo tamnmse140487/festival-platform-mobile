@@ -86,7 +86,7 @@ export default function MyFestivalsScreen() {
     () => (
       <View style={styles.emptyBox}>
         <Text style={[styles.emptyText, { color: colors.icon }]}>
-          Bạn chưa đăng ký tham gia lễ hội nào.
+          Bạn chưa quan tâm lễ hội nào.
         </Text>
       </View>
     ),
@@ -99,7 +99,7 @@ export default function MyFestivalsScreen() {
     >
       <View style={styles.container}>
         <Text style={[styles.title, { color: colors.text }]}>
-          Lễ hội đã đăng ký tham gia
+          Lễ hội đã quan tâm
         </Text>
 
         <FlatList

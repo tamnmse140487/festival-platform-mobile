@@ -111,7 +111,7 @@ export default function FestivalDetailScreen() {
 
   const handleRegistrationToggle = async () => {
     if (!user?.id || !id) {
-      Alert.alert("Vui lòng đăng nhập để tham gia lễ hội");
+      Alert.alert("Vui lòng đăng nhập để quan tâm lễ hội");
       return;
     }
 
@@ -127,9 +127,9 @@ export default function FestivalDetailScreen() {
 
         if (result) {
           setIsParticipating(false);
-          Alert.alert("Thành công", "Đã hủy tham gia lễ hội thành công!");
+          // Alert.alert("Thành công", "Đã bỏ quan tâm lễ hội thành công!");
         } else {
-          Alert.alert("Lỗi", "Không thể hủy tham gia lễ hội");
+          Alert.alert("Lỗi", "Không thể bỏ quan tâm lễ hội");
         }
       } else {
         const result =
@@ -143,7 +143,7 @@ export default function FestivalDetailScreen() {
           Alert.alert("Lỗi", `${result?.detail}`);
         } else {
           setIsParticipating(true);
-          Alert.alert("Thành công", "Đăng ký tham gia lễ hội thành công!");
+          // Alert.alert("Thành công", "Quan tâm lễ hội thành công!");
         }
       }
     } catch (error) {

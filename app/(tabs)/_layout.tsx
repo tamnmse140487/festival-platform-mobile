@@ -42,7 +42,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="my-festivals"
         options={{
-          title: "Lễ hội đã đăng ký",
+          title: "Lễ hội đã quan tâm",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ticket-outline" size={size} color={color} />
           ),

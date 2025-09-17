@@ -59,13 +59,13 @@ export const FestivalRegistration: React.FC<FestivalRegistrationProps> = ({
     const registrationEnd = new Date(festival.registrationEndDate);
 
     if (festival.status !== "published") {
-      return { canRegister: false, message: "Lễ hội chưa mở đăng ký" };
+      return { canRegister: false, message: "Lễ hội chưa mở quan tâm" };
     }
 
     if (now < registrationStart) {
       return {
         canRegister: false,
-        message: `Chưa tới thời gian đăng ký (từ ${formatDate(
+        message: `Chưa tới thời gian quan tâm (từ ${formatDate(
           festival.registrationStartDate
         )})`,
       };
@@ -115,8 +115,8 @@ export const FestivalRegistration: React.FC<FestivalRegistrationProps> = ({
             />
             <Text style={styles.registrationButtonText}>
               {isParticipating
-                ? "Hủy tham gia lễ hội"
-                : "Đăng ký tham gia lễ hội"}
+                ? "Bỏ quan tâm lễ hội"
+                : "Quan tâm lễ hội"}
             </Text>
           </View>
         )}
