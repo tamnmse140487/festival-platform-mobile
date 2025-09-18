@@ -22,7 +22,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon_food_festival.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": ["android.permission.DETECT_SCREEN_CAPTURE"]
     },
     "web": {
       "bundler": "metro",
