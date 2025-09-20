@@ -58,10 +58,6 @@ export const FestivalRegistration: React.FC<FestivalRegistrationProps> = ({
     const registrationStart = new Date(festival.registrationStartDate);
     const registrationEnd = new Date(festival.registrationEndDate);
 
-    if (festival.status !== "published") {
-      return { canRegister: false, message: "Lễ hội chưa mở quan tâm" };
-    }
-
     if (now < registrationStart) {
       return {
         canRegister: false,

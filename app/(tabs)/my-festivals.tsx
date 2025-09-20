@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { FestivalBasic } from "../../types";
 import { FestivalCard } from "../../components/festival/FestivalCard";
 import { Colors } from "../../constants/Colors";
 import { router } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 const ORDER: Record<"published" | "ongoing" | "completed", number> = {
   published: 0,
@@ -30,9 +31,11 @@ export default function MyFestivalsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [user?.id]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [user?.id])
+  );
 
   const loadData = async () => {
     if (!user?.id) {
